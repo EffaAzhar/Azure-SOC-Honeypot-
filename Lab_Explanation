@@ -1,1 +1,61 @@
+# Azure Honeypot and Centralized Logging Analysis 
+
+# Part 1: Azure Subscription Setup 
+This involved creating either a free Azure subscription or utilizing a paid subscription.
+
+# Part 2: Lab Architecture
+This project demonstrates the setup of a basic honeypot on Azure, the configuration of centralized logging using Azure Log Analytics Workspace (LAW) and
+Microsoft Sentinel, log enrichment with geographic data, and the visualization of potential attack origins on a map. Following is the screenshot of Lab Architecture.
+Screenshot---> https://github.com/EffaAzhar/Azure-SOC-Honeypot-/blob/main/Lab_Screenshots/Lab%20Architecture.png 
+
+# Part 3: Resource Group
+Resourec group "RG-SOC-Lab" is made in which all Azure resources necessary for labs are included, following is the list ; 
+Virtual Machine--> CORP-NET-EAST-2
+Virtual Network--> Vnet-soc-lab
+Public ip Address--> CORP-NET-EAST-2ip
+Network Security Group--> CORP-NET-EAST-2nsg
+Disk--> 
+Network Interface-->
+Screenshot---> https://github.com/EffaAzhar/Azure-SOC-Honeypot-/blob/main/Lab_Screenshots/Resource%20Group.png
+
+# part 4: Creating the Honey Pot (Azure Virtual Machine)
+A Windows 10 virtual machine was created on Azure to act as the honeypot. This VM is intentionally exposed to potential attacks to capture malicious activity.
+An NSG rule was created and applied to the virtual machine's network interface. This rule was configured to allow all inbound traffic. Crucially, in a real-world scenario,
+this is a highly insecure configuration for a production system and was done intentionally for the honeypot to capture any and all attempted connections. 
+The Windows Firewall on the virtual machine was turned off. Similar to the NSG configuration, this is a security risk in a production environment but was done 
+on the honeypot to ensure that no connection attempts were blocked at the OS level, maximizing the chances of capturing malicious activity in the logs. 
+Screenshot---> https://github.com/EffaAzhar/Azure-SOC-Honeypot-/blob/main/Lab_Screenshots/Window%20Defender%20Firewall%20Configuration.png
+
+# Part 4:  Logging into the VM and Inspecting Logs
+To generate security logs indicative of potential attacks, three failed login attempts were intentionally made using a non-existent username ("employee")
+
+# Part 5: Log Analytics Workspace (LAW) Creation
+The next step involved creating a central log repository in Azure called a Log Analytics Workspace named "Law-Soc-lab".
+This service provides a scalable platform to collect and analyze logs from various sources, including Azure VMs. 
+
+# Part 6: Microsoft Sentinel Instance Creation and Connection
+A Microsoft Sentinel instance (a cloud-native SIEM and SOAR solution) was created 
+and connected to the previously created Log Analytics Workspace. This establishes the architecture for advanced security monitoring and analysis.
+The architecture involves the VM generating logs, the Azure Monitor Agent (AMA) collecting these logs and sending them to the LAW, and 
+Sentinel then being able to access and analyze the data within the LAW. 
+Screenshot--> https://github.com/EffaAzhar/Azure-SOC-Honeypot-/blob/main/Lab_Screenshots/Log%20Analysis%201.png
+
+# Part 7: Querying Logs within the LAW
+The Log Analytics Workspace was directly queried using Kusto Query Language (KQL) to view the collected security logs. 
+Screenshot---> https://github.com/EffaAzhar/Azure-SOC-Honeypot-/blob/main/Lab_Screenshots/Log%20Analysis%202.png
+
+# Part 8:  Sentinel Watchlist Creation (GeoId Database Import):
+It was noted that the raw SecurityEvent logs in the LAW only contained the source IP address of the failed login attempts, lacking specific geographic location information. 
+To enrich the logs with location data, a CSV file (geoid-summarized.csv) 
+containing IP address ranges and their corresponding geographic information was downloaded and imported into Sentinel as a "Watchlist" named "geoid".
+Screeshots--> https://github.com/EffaAzhar/Azure-SOC-Honeypot-/blob/main/Lab_Screenshots/Microsoft%20Sentinel%20Watchlist.png
+
+#Part 9 Log Enrichment Query
+A KQL query was used to join the SecurityEvent logs with the "geoip" watchlist based on the IP address (IpAddress field). 
+The evaluate ipv4_lookup() function was used to perform this IP address-based lookup and add the geographic information to the log events. 
+Screenshots---> https://github.com/EffaAzhar/Azure-SOC-Honeypot-/blob/main/Lab_Screenshots/Log%20Analysis%20KQL%20mode.png
+
+#Part 10: Sentinel Workbook Creation
+A new Workbook was created within Sentinel. Workbooks provide interactive dashboards and visualizations. 
+Screenshots---> https://github.com/EffaAzhar/Azure-SOC-Honeypot-/blob/main/Lab_Screenshots/Microsoft%20Sentinel%20Workbook.png
 
